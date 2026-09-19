@@ -6,7 +6,7 @@ name: drift-detection
 
 on:
   schedule:
-    - cron: "0 8 * * *"   # daily; the collector sweeps hourly, so any hour is after a sweep
+    - cron: "20,50 * * * *"   # every 30 minutes while the run history builds; was 08:00 daily
   workflow_dispatch: {}
 
 permissions:
