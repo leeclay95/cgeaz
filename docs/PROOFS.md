@@ -42,6 +42,16 @@ gh run list --event schedule --limit 30 --json workflowName,createdAt,conclusion
   --jq '.[] | "\(.workflowName)  \(.createdAt)  \(.conclusion)"'
 ```
 
+## 1b. List the POA&Ms already produced
+A read-only tool lists every POA&M in the reports container with its creation time, whether the ledger says the
+timer or a manual call produced its run, and whether its finding count equals the store's count for that run:
+
+```bash
+python3 scripts/poam_history.py --cosmos "$COSMOS" --limit 30
+```
+
+A timer-made report is created at :10 past the hour and shows `timer`; a count that differs from the store shows `NO`.
+
 ## 2. Every report number traces to stored documents
 A report names the run it was cut from. The store still holds that run, so the counts reproduce:
 

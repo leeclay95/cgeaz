@@ -80,7 +80,8 @@ Only components that exist in the code appear here.
 | Branch protection on `main` | Four required gate checks; force pushes disabled | CM-3, CM-5 | PR.PS |
 | `drift-detection` workflow (rewritten) | Scheduled `terraform plan -detailed-exitcode` per stage; the exit code is captured without a pipe so drift cannot be lost. Drift opens one GitHub issue per stage with the diff, later runs comment on it, and a clean plan closes it. A plan that errors turns the job red | CM-2, CM-3, CM-6, CA-7 | DE.CM |
 | Terraform state account (added) | Shared keys off, blob versioning and 7-day soft delete, `CanNotDelete` lock, provider `subscription_id` explicit in every stage | AC-3, CP-9, CM-3 | PR.DS, PR.PS |
-| `unit-tests` workflow and `tests/` (added) | 27 tests on the evidence path (per-run IDs, ledger, owner stamping, severity order, crosswalk, store-only reporting), run on pull requests and nightly | SA-11 | PR.PS |
+| `scripts/poam_history.py` (added) | Read-only operator view of every POA&M produced: creation time, timer or manual origin from the run ledger, and whether each report's count equals the store's count for its run | AU-6, CA-7 | DE.CM, ID.IM |
+| `unit-tests` workflow and `tests/` (added) | 32 tests on the evidence path and the operator tools (per-run IDs, ledger, owner stamping, severity order, crosswalk, store-only reporting), run on pull requests and nightly | SA-11 | PR.PS |
 | `guide-ci` workflow | Every code block and relative link in the guides is machine-checked | SA-11 | PR.PS |
 
 ## Blast radius and rollback
