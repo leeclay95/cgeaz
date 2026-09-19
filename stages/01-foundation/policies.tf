@@ -1,4 +1,4 @@
-# Three policies, one initiative, assigned once at mg-grc-sandbox.
+# Four policies, one initiative, assigned once at mg-grc-sandbox.
 # Every subscription that ever joins the sandbox group inherits all of it. (CSF: GV.PO, PR.DS, PR.PS)
 
 # --- 1. Require the `env` tag on resource groups (inventory hygiene; POA&M owner resolution) ---
@@ -129,6 +129,50 @@ resource "azurerm_policy_definition" "storage_diagnostics" {
   })
 }
 
+# --- 4. Audit shared-key access on storage accounts (my own control, not in the starter) ---
+# Identity or nothing is this pipeline's rule for its data stores. Audit, not Deny: it is a new
+# control, and the Functions runtime scratch accounts legitimately keep shared keys (see
+# docs/DECISIONS.md), so a Deny would block the pipeline's own deploys. Promote to Deny through a
+# reviewed change once the exceptions are handled. NIST 800-53 Rev.5 IA-5, AC-3; CSF 2.0 PR.AA-05.
+
+resource "azurerm_policy_definition" "audit_shared_key" {
+  name                = "cge-audit-storage-shared-key"
+  display_name        = "Storage accounts should disable shared key access"
+  policy_type         = "Custom"
+  mode                = "Indexed"
+  management_group_id = azurerm_management_group.sandbox.id
+
+  metadata = jsonencode({
+    category    = "Storage"
+    nist80053r5 = ["IA-5", "AC-3"]
+    csf2        = ["PR.AA-05"]
+  })
+
+  parameters = jsonencode({
+    effect = {
+      type          = "String"
+      allowedValues = ["Audit", "Deny", "Disabled"]
+      defaultValue  = "Audit"
+    }
+  })
+
+  policy_rule = jsonencode({
+    if = {
+      allOf = [
+        { field = "type", equals = "Microsoft.Storage/storageAccounts" },
+        {
+          # An unset property means the default, which allows shared keys.
+          anyOf = [
+            { field = "Microsoft.Storage/storageAccounts/allowSharedKeyAccess", equals = "true" },
+            { field = "Microsoft.Storage/storageAccounts/allowSharedKeyAccess", exists = "false" }
+          ]
+        }
+      ]
+    }
+    then = { effect = "[parameters('effect')]" }
+  })
+}
+
 # --- The initiative: one assignment, whole-sandbox inheritance ---
 
 resource "azurerm_management_group_policy_set_definition" "grc_baseline" {
@@ -140,10 +184,12 @@ resource "azurerm_management_group_policy_set_definition" "grc_baseline" {
   parameters = jsonencode({
     tagEffect        = { type = "String", defaultValue = "Audit" }
     publicBlobEffect = { type = "String", defaultValue = "Deny" }
+    sharedKeyEffect  = { type = "String", defaultValue = "Audit" }
     workspaceId      = { type = "String" }
   })
 
   policy_definition_reference {
+    reference_id         = "requireEnvTag"
     policy_definition_id = azurerm_policy_definition.require_env_tag.id
     parameter_values = jsonencode({
       effect = { value = "[parameters('tagEffect')]" }
@@ -151,6 +197,7 @@ resource "azurerm_management_group_policy_set_definition" "grc_baseline" {
   }
 
   policy_definition_reference {
+    reference_id         = "denyPublicBlob"
     policy_definition_id = azurerm_policy_definition.deny_public_blob.id
     parameter_values = jsonencode({
       effect = { value = "[parameters('publicBlobEffect')]" }
@@ -158,6 +205,15 @@ resource "azurerm_management_group_policy_set_definition" "grc_baseline" {
   }
 
   policy_definition_reference {
+    reference_id         = "auditSharedKey"
+    policy_definition_id = azurerm_policy_definition.audit_shared_key.id
+    parameter_values = jsonencode({
+      effect = { value = "[parameters('sharedKeyEffect')]" }
+    })
+  }
+
+  policy_definition_reference {
+    reference_id         = "storageDiagnostics"
     policy_definition_id = azurerm_policy_definition.storage_diagnostics.id
     parameter_values = jsonencode({
       workspaceId = { value = "[parameters('workspaceId')]" }
@@ -175,6 +231,7 @@ resource "azurerm_management_group_policy_assignment" "grc_baseline" {
   parameters = jsonencode({
     tagEffect        = { value = var.tag_policy_effect }
     publicBlobEffect = { value = var.public_blob_policy_effect }
+    sharedKeyEffect  = { value = var.shared_key_policy_effect }
     workspaceId      = { value = azurerm_log_analytics_workspace.grc.id }
   })
 
