@@ -60,7 +60,7 @@ apply to every CI system you ever assess).
 **Expected output** (tail; your IDs differ):
 
 ```
-Done. Add these five VARIABLES (not secrets — see header comment) in YOUR fork:
+Done. Add these six VARIABLES (not secrets — see header comment) in YOUR fork:
 Settings -> Secrets and variables -> Actions -> Variables -> New repository variable
 
   AZURE_CLIENT_ID        <guid>
@@ -68,6 +68,7 @@ Settings -> Secrets and variables -> Actions -> Variables -> New repository vari
   AZURE_SUBSCRIPTION_ID  <guid>
   STATE_STORAGE_ACCOUNT  stgrctfstateXXXXXXXX
   OWNER_EMAIL            <your email>
+  DEPLOYER_OBJECT_ID     <your Entra object id>
 ```
 
 They're variables, not secrets, because OIDC stores no credential — the IDs grant
