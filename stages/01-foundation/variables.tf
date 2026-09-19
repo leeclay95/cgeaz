@@ -44,3 +44,13 @@ variable "subscription_id" {
     error_message = "subscription_id must be a subscription GUID."
   }
 }
+
+variable "shared_key_policy_effect" {
+  description = "Effect for the audit-storage-shared-key policy. Audit while it is a new control; Deny only after the Functions runtime scratch accounts are handled."
+  type        = string
+  default     = "Audit"
+  validation {
+    condition     = contains(["Audit", "Deny", "Disabled"], var.shared_key_policy_effect)
+    error_message = "shared_key_policy_effect must be Audit, Deny, or Disabled."
+  }
+}

@@ -39,6 +39,12 @@ without a pipe: piping through `tee` lets `tee`'s status replace terraform's, an
 changing reality. Each misses what the other sees: a change that leaves the plan clean (a tag on an unmanaged
 resource) or a change that is made and reverted between plans.
 
+## Shared-key access is audited, not denied
+`cge-audit-storage-shared-key` is a policy of my own, added to the baseline initiative at Audit. A Deny would block the
+Functions scratch accounts, which need shared keys, so it stays Audit until those exceptions are handled; promoting
+it is a one-variable reviewed change (`shared_key_policy_effect`). The initiative gives every policy an explicit
+`reference_id`: without them Azure generated the same reference ID for two of the four policies and rejected the update.
+
 ## Shared keys stay on for the Functions scratch accounts only
 The Consumption runtime needs key auth on its own scratch storage for zip deploys and timers. The evidence
 account and the Terraform state account have shared keys disabled. checkov's two findings for the scratch
