@@ -6,7 +6,7 @@ name: drift-detection
 
 on:
   schedule:
-    - cron: "20,50 * * * *"   # every 30 minutes while the run history builds; was 08:00 daily
+    - cron: "27,57 * * * *"   # every 30 minutes, off the :00/:30 peak; was 08:00 daily
   workflow_dispatch: {}
 
 permissions:

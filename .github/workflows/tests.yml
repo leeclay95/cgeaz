@@ -10,7 +10,7 @@ on:
       - "tests/**"
       - ".github/workflows/tests.yml"
   schedule:
-    - cron: "10,40 * * * *"   # every 30 minutes while the run history builds; was 07:30 daily
+    - cron: "17,47 * * * *"   # every 30 minutes, off the :00/:30 peak; was 07:30 daily
   workflow_dispatch: {}
 
 permissions:

@@ -19,7 +19,7 @@ on:
       - "README.md"
       - ".github/workflows/guide-ci.yml"
   schedule:
-    - cron: "0,30 * * * *"   # every 30 minutes while the run history builds; was 07:00 daily
+    - cron: "7,37 * * * *"   # every 30 minutes, off the :00/:30 peak; was 07:00 daily
   workflow_dispatch: {}
 
 permissions:
