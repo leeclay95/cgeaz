@@ -51,7 +51,7 @@ STATE_SA=$(grep storage_account_name "$(dirname "$0")/../03-foundation/backend.h
 
 cat <<EOF
 
-Done. Add these five VARIABLES (not secrets — see header comment) in YOUR fork:
+Done. Add these six VARIABLES (not secrets — see header comment) in YOUR fork:
 Settings -> Secrets and variables -> Actions -> Variables -> New repository variable
 
   AZURE_CLIENT_ID        $APP_ID
@@ -59,6 +59,7 @@ Settings -> Secrets and variables -> Actions -> Variables -> New repository vari
   AZURE_SUBSCRIPTION_ID  $SUB_ID
   STATE_STORAGE_ACCOUNT  $STATE_SA
   OWNER_EMAIL            <your email>
+  DEPLOYER_OBJECT_ID     $(az ad signed-in-user show --query id -o tsv 2>/dev/null || echo '<your Entra object id: az ad signed-in-user show --query id -o tsv>')
 
 Then enable the two workflows in your fork's Actions tab. Never add these to the
 upstream GRCEngClub/cgeaz repo — its workflows are intentionally unarmed.

@@ -47,3 +47,9 @@ variable "subscription_id" {
     error_message = "subscription_id must be a subscription GUID."
   }
 }
+
+variable "deployer_object_id" {
+  description = "Object ID of the person who applies this stage. Leave empty to use whoever is running Terraform; set it in CI so a plan run by the pipeline identity does not report the deployer as changed."
+  type        = string
+  default     = ""
+}
