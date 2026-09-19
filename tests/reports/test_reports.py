@@ -13,6 +13,7 @@ spec = importlib.util.spec_from_file_location("reports", SRC)
 reports = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reports)
 
+SWEEP = "2026-09-18T20:42:05+00:00"
 RG = "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/rg/providers/Microsoft.Storage/storageAccounts/"
 
 
@@ -21,7 +22,7 @@ def finding(name, severity, owner, resource="a"):
 
 
 class FakeCosmos:
-    def __init__(self, findings, run=("run-1", "2026-09-18T20:42:05+00:00")):
+    def __init__(self, findings, run=("run-1", SWEEP)):
         self.findings, self.run = findings, run
 
     crosswalk = [
@@ -48,7 +49,7 @@ class FakeBlobs:
         return next(data for name, data, _ in self.uploads if name.endswith(suffix))
 
 
-def generate(monkeypatch, findings, run=("run-1", "2026-09-18T20:42:05+00:00"), kind="poam"):
+def generate(monkeypatch, findings, run=("run-1", SWEEP), kind="poam"):
     blobs = FakeBlobs()
     monkeypatch.setattr(reports, "_clients", lambda: ((FakeCosmos(findings, run),) * 3, blobs))
     result = reports.generate_poam() if kind == "poam" else reports.generate_sar()
@@ -81,8 +82,9 @@ def test_severity_is_ranked_not_alphabetical_and_the_sla_follows_it(monkeypatch)
     _, blobs = generate(monkeypatch, findings)
     items = poam_items(blobs)
     assert [i["severity"] for i in items] == ["High", "Medium", "Medium", "Low"], "text order would put Low before Medium"
-    today = datetime.date.today()
-    days = {i["weakness"]: (datetime.date.fromisoformat(i["scheduledCompletion"]) - today).days for i in items}
+    # Due dates count from the sweep, not the wall clock, so this must hold on any day the test runs.
+    sweep_day = datetime.date.fromisoformat(SWEEP[:10])
+    days = {i["weakness"]: (datetime.date.fromisoformat(i["scheduledCompletion"]) - sweep_day).days for i in items}
     assert days == {"high": 30, "med": 90, "unrated": 90, "low": 180}, "no severity is treated as Medium"
 
 
